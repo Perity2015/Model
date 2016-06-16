@@ -133,7 +133,8 @@ public class Utils {
             ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo mWiFiNetworkInfo = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
             if (mWiFiNetworkInfo != null) {
-                return mWiFiNetworkInfo.isAvailable();
+                NetworkInfo.State state = mWiFiNetworkInfo.getState();
+                return mWiFiNetworkInfo.isAvailable() && (state == NetworkInfo.State.CONNECTED || state == NetworkInfo.State.CONNECTING);
             }
         }
 
@@ -145,7 +146,8 @@ public class Utils {
             ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo mMobileNetworkInfo = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
             if (mMobileNetworkInfo != null) {
-                return mMobileNetworkInfo.isAvailable();
+                NetworkInfo.State state = mMobileNetworkInfo.getState();
+                return mMobileNetworkInfo.isAvailable() && (state == NetworkInfo.State.CONNECTED || state == NetworkInfo.State.CONNECTING);
             }
         }
 
