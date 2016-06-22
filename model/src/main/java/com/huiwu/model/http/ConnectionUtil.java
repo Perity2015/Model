@@ -10,7 +10,9 @@ import com.lzy.okhttputils.callback.FileCallback;
 import com.lzy.okhttputils.request.PostRequest;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import okhttp3.Response;
@@ -90,6 +92,12 @@ public class ConnectionUtil {
 
 
     public static void postParams(String request_url, Map<String, String> map, Map<String, File> fileMap, boolean needFile, AbsCallback absCallback) {
+        postParams(TAG, request_url, map, fileMap, needFile, absCallback);
+
+    }
+
+
+    public static void postParams(Object tag, String request_url, Map<String, String> map, Map<String, File> fileMap, boolean needFile, AbsCallback absCallback) {
         PostRequest request = OkHttpUtils.post(request_url).tag(TAG);
         if (map != null && map.size() > 0) {
             Log.d(TAG, map.toString());
@@ -97,31 +105,14 @@ public class ConnectionUtil {
                 request.params(entry.getKey(), entry.getValue());
             }
         }
-        if (fileMap != null && fileMap.size() > 0 && needFile) {
-            for (Map.Entry<String, File> entry : fileMap.entrySet()) {
-                request.params(entry.getKey(), entry.getValue());
+
+        if (fileMap != null && fileMap.size() > 0) {
+            if (needFile) {
+                for (Map.Entry<String, File> entry : fileMap.entrySet()) {
+                    request.params(entry.getKey(), entry.getValue());
+                }
             }
         }
-
-        request.execute(absCallback);
-
-    }
-
-
-    public static void postParams(Object tag, String request_url, Map<String, String> map, Map<String, File> fileMap, boolean needFile, AbsCallback absCallback) {
-        PostRequest request = OkHttpUtils.post(request_url).tag(tag);
-        if (map != null && map.size() > 0) {
-            Log.d(TAG, map.toString());
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                request.params(entry.getKey(), entry.getValue());
-            }
-        }
-        if (fileMap != null && fileMap.size() > 0 && needFile) {
-            for (Map.Entry<String, File> entry : fileMap.entrySet()) {
-                request.params(entry.getKey(), entry.getValue());
-            }
-        }
-
         request.execute(absCallback);
 
     }
