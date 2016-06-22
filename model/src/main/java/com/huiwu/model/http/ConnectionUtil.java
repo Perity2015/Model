@@ -1,7 +1,5 @@
 package com.huiwu.model.http;
 
-import android.os.Environment;
-import android.text.format.DateFormat;
 import android.util.Log;
 
 import com.lzy.okhttputils.OkHttpUtils;
@@ -10,9 +8,7 @@ import com.lzy.okhttputils.callback.FileCallback;
 import com.lzy.okhttputils.request.PostRequest;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import okhttp3.Response;
@@ -22,6 +18,24 @@ import okhttp3.Response;
  */
 public class ConnectionUtil {
     private static final String TAG = ConnectionUtil.class.getSimpleName();
+    private static ConnectionUtil instance;
+    public static boolean DEBUG = false;
+
+    public static ConnectionUtil getInstance() {
+        if (instance == null) {
+            synchronized (ConnectionUtil.class) {
+                if (instance == null) {
+                    instance = new ConnectionUtil();
+                }
+            }
+        }
+        return instance;
+    }
+
+    public void debug(boolean debug) {
+        DEBUG = debug;
+    }
+
 
     public static String getResponse(String request_url, Map<String, String> map) throws IOException {
         return getResponse(TAG, request_url, map, null);
@@ -100,7 +114,8 @@ public class ConnectionUtil {
     public static void postParams(Object tag, String request_url, Map<String, String> map, Map<String, File> fileMap, boolean needFile, AbsCallback absCallback) {
         PostRequest request = OkHttpUtils.post(request_url).tag(TAG);
         if (map != null && map.size() > 0) {
-            Log.d(TAG, map.toString());
+            if (DEBUG)
+                Log.d(TAG, map.toString());
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 request.params(entry.getKey(), entry.getValue());
             }
