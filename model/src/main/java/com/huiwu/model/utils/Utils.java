@@ -1,5 +1,6 @@
 package com.huiwu.model.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,6 +12,7 @@ import android.os.Environment;
 import android.telephony.TelephonyManager;
 import android.text.format.DateFormat;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
@@ -90,7 +92,6 @@ public class Utils {
         }
         return record;
     }
-
 
     /**
      * 格式化服务端返回的时间 /Date(1463801868000)/
@@ -475,6 +476,17 @@ public class Utils {
         }
 
         return null;
+    }
+
+    /**
+     * 关闭软键盘
+     *
+     * @param activity
+     */
+    public static void hideInputSoft(Activity activity) {
+        InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(),
+                InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
 }
