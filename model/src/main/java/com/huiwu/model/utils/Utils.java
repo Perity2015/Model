@@ -30,40 +30,74 @@ public class Utils {
     public Utils() {
     }
 
+    /**
+     * 创建图片文件名
+     *
+     * @return
+     */
     public static String createFileName() {
         return DateFormat.format("\'IMG\'_yyyyMMdd_kkmmss", System.currentTimeMillis()) + ".jpg";
     }
 
-    public static NdefRecord[] createNdefRecord(String type, String data) {
-        NdefRecord[] bytes1;
-        byte[] str1;
-        if ("contact".equals(type)) {
-            str1 = data.getBytes();
-            System.arraycopy(str1, 0, new byte[1 + str1.length], 1, str1.length);
-            bytes1 = new NdefRecord[]{new NdefRecord((short) 2, "text/x-vCard".getBytes(Charset.forName("US-ASCII")), new byte[0], str1)};
-            return bytes1;
-        } else if ("text".equals(type)) {
-            str1 = data.getBytes();
-            bytes1 = new NdefRecord[]{new NdefRecord((short) 1, NdefRecord.RTD_TEXT, new byte[0], str1)};
-            return bytes1;
-        } else {
-            String str = "";
-            if ("call".equals(type)) {
-                str = "tel:";
-            } else if ("sms".equals(type)) {
-                str = "sms:";
-            } else if ("email".equals(type)) {
-                str = "mailto:";
-            }
-
-            byte[] bytes = (str + data).getBytes();
-            byte[] new_bytes = new byte[1 + bytes.length];
-            System.arraycopy(bytes, 0, new_bytes, 1, bytes.length);
-            NdefRecord[] ndefRecords = new NdefRecord[]{new NdefRecord((short) 1, NdefRecord.RTD_URI, new byte[0], new_bytes)};
-            return ndefRecords;
+    /**
+     * 创建图片文件路径
+     *
+     * @param appName     应用名称->创建相关目录
+     * @param pictureName 图片文件名
+     * @return
+     */
+    public static File getPictureFile(String appName, String pictureName) {
+        File file_dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File file_picture = new File(file_dir, appName);
+        if (!file_picture.exists()) {
+            file_picture.mkdirs();
         }
+        File file = new File(file_picture, pictureName);
+        return file;
     }
 
+    /**
+     * 创建NDEF信息
+     *
+     * @param type  text 文本类容 url 网址类容
+     * @param value 类容
+     * @return
+     */
+    public static NdefRecord createNdefRecord(String type, String value) {
+        //生成语言编码的字节数组，中文编码
+        byte[] langBytes = Locale.CHINA.getLanguage().getBytes(Charset.forName("US-ASCII"));
+        //将要写入的文本以UTF_8格式进行编码
+        Charset utfEncoding = Charset.forName("UTF-8");
+        //由于已经确定文本的格式编码为UTF_8，所以直接将payload的第1个字节的第7位设为0
+        byte[] valueBytes = value.getBytes(utfEncoding);
+        int utfBit = 0;
+        //定义和初始化状态字节
+        char status = (char) (utfBit + langBytes.length);
+        //创建存储payload的字节数组
+        byte[] data = new byte[1 + langBytes.length + valueBytes.length];
+        //设置状态字节
+        data[0] = (byte) status;
+        //设置语言编码
+        System.arraycopy(langBytes, 0, data, 1, langBytes.length);
+        //设置实际要写入的文本
+        System.arraycopy(valueBytes, 0, data, 1 + langBytes.length, valueBytes.length);
+        //根据前面设置的payload创建NdefRecord对象
+        NdefRecord record;
+        if (type.equals("text")) {
+            record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], data);
+        } else {
+            record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_URI, new byte[0], data);
+        }
+        return record;
+    }
+
+
+    /**
+     * 格式化服务端返回的时间 /Date(1463801868000)/
+     *
+     * @param datetime
+     * @return
+     */
     public static String formatDateTime(String datetime) {
         try {
             return DateFormat.format("yyyy-MM-dd kk:mm:ss", Long.parseLong(datetime.substring(6, datetime.length() - 2))).toString();
@@ -72,6 +106,12 @@ public class Utils {
         }
     }
 
+    /**
+     * 解析Long时间
+     *
+     * @param datetime
+     * @return
+     */
     public static String formatDateTimeOffLine(long datetime) {
         try {
             return DateFormat.format("yyyy-MM-dd kk:mm:ss", datetime).toString();
@@ -80,54 +120,76 @@ public class Utils {
         }
     }
 
-    public static String toHexString(byte[] byteArray, int size) {
-        if (byteArray != null && byteArray.length >= 1) {
+    /**
+     * byte[] 转为指定长度的HEX String
+     *
+     * @param bytes
+     * @param size
+     * @return
+     */
+    public static String toHexString(byte[] bytes, int size) {
+        if (bytes != null && bytes.length >= 1) {
             StringBuilder hexString = new StringBuilder(2 * size);
 
             for (int i = 0; i < size; ++i) {
-                if ((byteArray[i] & 255) < 16) {
-                    hexString.append("0");
+                String sTemp = Integer.toHexString(255 & bytes[i]);
+                if (sTemp.length() < 2) {
+                    hexString.append(0);
                 }
-
-                hexString.append(Integer.toHexString(255 & byteArray[i]));
-                if (i != byteArray.length - 1) {
-                    hexString.append("");
-                }
+                hexString.append(sTemp.toUpperCase());
             }
 
-            return hexString.toString().toUpperCase();
+            return hexString.toString();
         } else {
-            throw new IllegalArgumentException("this byteArray must not be null or empty");
+            throw new IllegalArgumentException("this bytes must not be null or empty");
         }
     }
 
-    public static String bytesToHexString(byte[] bArray) {
-        StringBuffer sb = new StringBuffer(bArray.length);
+    /**
+     * byte[] 转为HEX String
+     *
+     * @param bytes
+     * @return
+     */
+    public static String bytesToHexString(byte[] bytes) {
+        StringBuffer sb = new StringBuffer(bytes.length);
 
-        for (int i = 0; i < bArray.length; ++i) {
-            String sTemp = Integer.toHexString(255 & bArray[i]);
+        for (int i = 0; i < bytes.length; ++i) {
+            String sTemp = Integer.toHexString(255 & bytes[i]);
             if (sTemp.length() < 2) {
                 sb.append(0);
             }
-
             sb.append(sTemp.toUpperCase());
         }
 
         return sb.toString();
     }
 
+    /**
+     * 检查是否有网络连接
+     *
+     * @param context
+     * @return
+     */
     public static boolean isNetworkConnected(Context context) {
         if (context != null) {
             ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo mNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
             if (mNetworkInfo != null) {
-                return mNetworkInfo.isAvailable();
+                NetworkInfo.State state = mNetworkInfo.getState();
+                return mNetworkInfo.isAvailable() && (state == NetworkInfo.State.CONNECTED || state == NetworkInfo.State.CONNECTING);
             }
         }
 
         return false;
     }
 
+    /**
+     * 检查是否有WIFI连接
+     *
+     * @param context
+     * @return
+     */
     public static boolean isWifiConnected(Context context) {
         if (context != null) {
             ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -141,6 +203,12 @@ public class Utils {
         return false;
     }
 
+    /**
+     * 检查是否有移动网络连接
+     *
+     * @param context
+     * @return
+     */
     public static boolean isMobileConnected(Context context) {
         if (context != null) {
             ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -154,6 +222,12 @@ public class Utils {
         return false;
     }
 
+    /**
+     * 检查语言环境 是否为中文
+     *
+     * @param context
+     * @return
+     */
     public static boolean isZh(Context context) {
         Locale locale = context.getResources().getConfiguration().locale;
         String language = locale.getLanguage();
@@ -162,25 +236,21 @@ public class Utils {
 
     public static void showShortToast(String message, Context context) {
         Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
-//        toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();
     }
 
     public static void showShortToast(int message, Context context) {
         Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
-//        toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();
     }
 
     public static void showLongToast(String message, Context context) {
         Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
-//        toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();
     }
 
     public static void showLongToast(int message, Context context) {
         Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
-//        toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();
     }
 
@@ -188,7 +258,7 @@ public class Utils {
         StringBuffer sb = new StringBuffer();
 
         for (int i = start; i < start + end; ++i) {
-            sb.append(String.format("%02X", new Object[]{Byte.valueOf(bytes[i])}));
+            sb.append(String.format("%02X", 255 & bytes[i]));
         }
 
         return sb.toString();
