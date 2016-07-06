@@ -3,6 +3,8 @@ package com.huiwu.model.utils;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -223,6 +225,23 @@ public class Utils {
         }
 
         return false;
+    }
+
+    /**
+     * 获得当前应用版本号
+     *
+     * @param context
+     * @return
+     */
+    public static String getAppVersionName(Context context) {
+        try {
+            PackageManager e = context.getPackageManager();
+            PackageInfo packInfo = e.getPackageInfo(context.getPackageName(), 0);
+            return packInfo.versionName;
+        } catch (PackageManager.NameNotFoundException var5) {
+            var5.printStackTrace();
+            return null;
+        }
     }
 
     /**

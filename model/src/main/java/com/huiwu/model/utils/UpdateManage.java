@@ -5,18 +5,16 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.text.format.Formatter;
 
 import com.huiwu.model.R;
 import com.huiwu.model.http.ConnectionUtil;
 import com.huiwu.model.http.StringConnectionCallBack;
-import com.lzy.okhttputils.OkHttpUtils;
 import com.lzy.okhttputils.callback.FileCallback;
 import com.lzy.okhttputils.request.BaseRequest;
 
@@ -34,30 +32,26 @@ import okhttp3.Response;
  * Created by HuiWu on 2015/9/23.
  */
 public class UpdateManage {
+    private final String CHECK_VERSION_URL = "http://www.yunrfid.com/CoreSYS.SYS/GetNewAppVer.ajax";
     private Context mContext;
     private String apkVer;
     private String apkName;
     private ProgressDialog dialog;
     private boolean need_toast;
 
-    private final String CHECK_VERSION_URL = "http://www.yunrfid.com/CoreSYS.SYS/GetNewAppVer.ajax";
-
     public UpdateManage(Context context, ProgressDialog dialog, boolean need_toast) {
         this.mContext = context;
         this.need_toast = need_toast;
         this.dialog = dialog;
 
-        try {
-            PackageManager e = context.getPackageManager();
-            PackageInfo packInfo = e.getPackageInfo(context.getPackageName(), 0);
-            this.apkVer = packInfo.versionName;
-        } catch (PackageManager.NameNotFoundException var5) {
-            var5.printStackTrace();
-        }
+        this.apkVer = Utils.getAppVersionName(context);
 
     }
 
     public void checkVersion(String appName) {
+        if (TextUtils.isEmpty(apkVer)) {
+            return;
+        }
         HashMap map = new HashMap();
         this.apkName = appName;
         map.put("appname", appName);
