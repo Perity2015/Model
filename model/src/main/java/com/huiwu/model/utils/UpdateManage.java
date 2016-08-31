@@ -32,7 +32,8 @@ import okhttp3.Response;
  * Created by HuiWu on 2015/9/23.
  */
 public class UpdateManage {
-    private final String CHECK_VERSION_URL = "http://www.yunrfid.com/CoreSYS.SYS/GetNewAppVer.ajax";
+    private String HOST = "http://www.yunrfid.com";
+    private String CHECK_VERSION_URL = "/CoreSYS.SYS/GetNewAppVer.ajax";
     private Context mContext;
     private String apkVer;
     private String apkName;
@@ -45,7 +46,10 @@ public class UpdateManage {
         this.dialog = dialog;
 
         this.apkVer = Utils.getAppVersionName(context);
+    }
 
+    public void setHOST(String host){
+        HOST = host;
     }
 
     public void checkVersion(String appName) {
@@ -56,7 +60,7 @@ public class UpdateManage {
         this.apkName = appName;
         map.put("appname", appName);
         map.put("ver", this.apkVer);
-        ConnectionUtil.postParams(CHECK_VERSION_URL, map, new StringConnectionCallBack() {
+        ConnectionUtil.postParams(HOST+CHECK_VERSION_URL, map, new StringConnectionCallBack() {
             @Override
             public void sendStart(BaseRequest request) {
                 if (need_toast) {
@@ -78,7 +82,7 @@ public class UpdateManage {
                     JSONObject jsonObject = new JSONObject(s);
                     JSONObject e = jsonObject.getJSONObject("m_ReturnOBJ");
                     if (e.getBoolean("NewVer")) {
-                        String apkUrl = "http://www.yunrfid.com" + e.getString("DownUrl");
+                        String apkUrl = HOST + e.getString("DownUrl");
                         String verName = e.getString("ver");
                         String updateMsg = mContext.getString(R.string.find_new_version_note) + verName;
                         UpdateManage.this.showNoticeDialog(apkUrl, updateMsg);

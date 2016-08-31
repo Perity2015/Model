@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Model</string>
     <string name="check_update_load">Check Update</string>
     <string name="find_new_version_note">Find New Version：</string>
     <string name="have_been_new_version">Has been the latest version</string>

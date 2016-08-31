@@ -13,6 +13,7 @@ import android.net.NetworkInfo;
 import android.nfc.NdefRecord;
 import android.os.Environment;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -65,11 +66,18 @@ public class Utils {
     /**
      * 创建NDEF信息
      *
-     * @param type  text 文本类容 url 网址类容
+     * @param type  text 文本类容 url URIl类型
      * @param value 类容
      * @return
      */
     public static NdefRecord createNdefRecord(String type, String value) {
+        if (TextUtils.equals("url", type)) {
+            return createUriRecord(value);
+        }
+        return createTextRecord(value);
+    }
+
+    public static NdefRecord createTextRecord(String value) {
         //生成语言编码的字节数组，中文编码
         byte[] langBytes = Locale.CHINA.getLanguage().getBytes(Charset.forName("US-ASCII"));
         //将要写入的文本以UTF_8格式进行编码
@@ -89,11 +97,40 @@ public class Utils {
         System.arraycopy(valueBytes, 0, data, 1 + langBytes.length, valueBytes.length);
         //根据前面设置的payload创建NdefRecord对象
         NdefRecord record;
-        if (type.equals("text")) {
-            record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], data);
-        } else {
-            record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_URI, new byte[0], data);
+        record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], data);
+
+        return record;
+    }
+
+    public static NdefRecord createUriRecord(String uriStr) {
+
+        byte prefix = 0;
+        //从uri前缀集合中找到匹配的前缀，并获得相应的标识代码
+        for (Byte b : UriRecord.URI_PREFIX_MAP.keySet()) {
+            //将Uri前缀转换成小写
+            String prefixStr = UriRecord.URI_PREFIX_MAP.get(b).toLowerCase();
+            //前缀不为空串
+            if ("".equals(prefixStr))
+                continue;
+            //比较Uri前缀
+            if (uriStr.toLowerCase().startsWith(prefixStr)) {
+                //用字节表示的Uri前缀
+                prefix = b;
+                //截取完整Uri中除了Uri前缀外的其他部分
+                uriStr = uriStr.substring(prefixStr.length());
+                break;
+            }
         }
+        //为存储在标签中的Uri创建一个Byte数组
+        byte[] data = new byte[1 + uriStr.length()];
+        //指定第1字节为Uri前缀的标识代码
+        data[0] = prefix;
+        //将剩余的部分复制到data字节数组中
+        System.arraycopy(uriStr.getBytes(), 0, data, 1, uriStr.length());
+        //创建封装uri的NdefRecord对象
+        NdefRecord record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN,
+                NdefRecord.RTD_URI, new byte[0], data);
+        //返回NdefRecord对象
         return record;
     }
 
@@ -251,27 +288,42 @@ public class Utils {
      * @return
      */
     public static boolean isZh(Context context) {
+        if (context == null){
+            return true;
+        }
         Locale locale = context.getResources().getConfiguration().locale;
         String language = locale.getLanguage();
         return language.endsWith("zh");
     }
 
     public static void showShortToast(String message, Context context) {
+        if (context == null){
+            return;
+        }
         Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
         toast.show();
     }
 
     public static void showShortToast(int message, Context context) {
+        if (context == null){
+            return;
+        }
         Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
         toast.show();
     }
 
     public static void showLongToast(String message, Context context) {
+        if (context == null){
+            return;
+        }
         Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
         toast.show();
     }
 
     public static void showLongToast(int message, Context context) {
+        if (context == null){
+            return;
+        }
         Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
         toast.show();
     }
@@ -294,6 +346,9 @@ public class Utils {
     }
 
     public static String getDeviceId(Context context) {
+        if (context == null){
+            return null;
+        }
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         return telephonyManager.getDeviceId();
     }
@@ -505,6 +560,9 @@ public class Utils {
      * @param activity
      */
     public static void hideInputSoft(Activity activity) {
+        if (activity == null){
+            return;
+        }
         InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(),
                 InputMethodManager.HIDE_NOT_ALWAYS);
@@ -517,6 +575,9 @@ public class Utils {
      * @return
      */
     public static boolean isAppOnForeground(Context context) {
+        if (context == null){
+            return false;
+        }
         // 首先获取activity管理器和当前进程的包名
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         String packageName = context.getPackageName();

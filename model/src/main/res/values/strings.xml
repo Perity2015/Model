@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Model</string>
     <string name="check_update_load">检查更新中</string>
     <string name="find_new_version_note">发现新版本，请点击下载\n最新版本：</string>
     <string name="have_been_new_version">已经是最新版本</string>

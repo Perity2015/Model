@@ -48,26 +48,15 @@ public class ConnectionUtil {
 
 
     public static String getResponse(String request_url, Map<String, String> map, Map<String, File> fileMap) throws IOException {
-        PostRequest request = OkHttpUtils.post(request_url).tag(TAG);
 
-        if (map != null && map.size() > 0) {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                request.params(entry.getKey(), entry.getValue());
-            }
-        }
-        if (fileMap != null && fileMap.size() > 0) {
-            for (Map.Entry<String, File> entry : fileMap.entrySet()) {
-                request.params(entry.getKey(), entry.getValue());
-            }
-        }
-
-        Response response = request.execute();
-        return response.body().string();
+        return getResponse(TAG,request_url,map,fileMap);
     }
 
 
     public static String getResponse(Object tag, String request_url, Map<String, String> map, Map<String, File> fileMap) throws IOException {
-        PostRequest request = OkHttpUtils.post(request_url).tag(tag);
+        PostRequest request = OkHttpUtils.post(request_url);
+       request = request.tag(tag);
+
 
         if (map != null && map.size() > 0) {
             for (Map.Entry<String, String> entry : map.entrySet()) {

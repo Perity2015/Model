@@ -1,8 +1,8 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 24
+    buildToolsVersion "24.0.0"
 
     defaultConfig {
         minSdkVersion 15
@@ -20,10 +20,9 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:appcompat-v7:24.1.1'
     testCompile 'junit:junit:4.12'
     compile 'com.nineoldandroids:library:2.4.0'
-    compile 'com.squareup.okhttp3:okhttp:3.2.0'
-    compile 'com.lzy.net:okhttputils:1.5.2'
-    compile 'com.lzy.net:okhttpserver:0.1.7'
+    compile 'com.squareup.okhttp3:okhttp-urlconnection:3.2.0'
+    compile 'com.lzy.net:okhttputils:1.7.2'
 }
